@@ -163,6 +163,7 @@ function questoes(v) {
   document.body.classList.toggle("in-quiz", qz.mode === "run");
   if (qz.mode === "menu") return quizMenu(v);
   if (qz.mode === "end") return quizEnd(v);
+  if (qz.mode === "hist") return quizHist(v);
   quizRun(v);
 }
 function quizMenu(v) {
@@ -175,12 +176,28 @@ function quizMenu(v) {
       <button class="tile lime click span2 m2" data-k="treino" style="min-height:190px"><h2>Treino</h2><div class="mid" style="font-size:26px">Gabarito na hora</div><p class="sm" style="margin-top:8px;font-weight:600">Você marca, vê a explicação e segue.</p></button>
       <button class="tile g3 click span2" data-k="simulado" style="min-height:190px"><h2>Simulado</h2><div class="mid" style="font-size:26px">Só no fim</div><p class="sm" style="margin-top:8px;font-weight:600">Resultado e revisão ao terminar.</p></button>
       <button class="tile g2 click span2" data-k="erros" style="min-height:190px"><h2>Caderno de erros</h2><div class="mid" style="font-size:26px">${wrongIds().length} para refazer</div><p class="sm" style="margin-top:8px;font-weight:600">Só o que você errou antes.</p></button>
-    </div>`;
+    </div>
+    <button class="btn ghost" data-h="1" style="margin-top:20px">Ver respondidas (${answered().length})</button>`;
   v.onclick = e => {
     const s = e.target.closest("[data-s]"), n = e.target.closest("[data-n]"), k = e.target.closest("[data-k]");
+    if (e.target.closest("[data-h]")) { qz.mode = "hist"; qz.hf = "all"; return quizHist(v); }
     if (s) { qz.subj = s.dataset.s; return quizMenu(v); }
     if (n) { qz.n = +n.dataset.n; return quizMenu(v); }
     if (k && buildQuiz(k.dataset.k)) questoes(v);
+  };
+}
+const answered = () => MCQ.filter(q => P().answers[q.id]).sort((a, b) => P().answers[b.id].ts - P().answers[a.id].ts);
+function quizHist(v) {
+  const list = answered().filter(q => qz.hf === "all" || (qz.hf === "ok") === P().answers[q.id].ok);
+  const f = [["all", "Todas"], ["ok", "Acertos"], ["no", "Erros"]];
+  v.innerHTML = title("Respondidas", `${answered().length} questões já respondidas, da mais recente para a mais antiga.`) +
+    `<div class="chips" style="margin-bottom:20px">${f.map(([k, t]) => `<button class="chip" data-f="${k}" aria-pressed="${qz.hf === k}">${t}</button>`).join("")}</div>` +
+    (list.length ? list.map(q => { const a = P().answers[q.id]; return `<div class="tile" style="margin-bottom:12px"><span class="pill">${esc(SUBJ[q.s].nome)} · ${a.ok ? "Acertou" : "Errou"}</span><p style="font-weight:700;font-size:18px;margin-top:10px">${esc(q.q)}</p>${a.pick && !a.ok ? `<p class="sm" style="margin-top:12px"><span class="mut">Você marcou:</span> ${esc(a.pick)}</p>` : ""}<p class="sm" style="margin-top:4px"><span class="mut">Correta:</span> <b>${esc(q.c)}</b></p><p class="sm" style="margin-top:10px;padding:12px 14px;border-radius:16px;background:var(--fill)">${esc(q.exp)}</p></div>`; }).join("") : `<p class="mut">Nada por aqui ainda.</p>`) +
+    `<button class="btn" data-b="1" style="margin-top:12px">Voltar</button>`;
+  v.onclick = e => {
+    const f = e.target.closest("[data-f]");
+    if (f) { qz.hf = f.dataset.f; return quizHist(v); }
+    if (e.target.closest("[data-b]")) { qz.mode = "menu"; questoes(v); }
   };
 }
 function quizRun(v) {
@@ -196,7 +213,7 @@ function quizRun(v) {
   </div>
   ${reveal ? `<div class="sheet ${it.pick.right ? "ok" : "no"}" role="status"><h3>${it.pick.right ? "Isso aí." : "Resposta: " + LETTERS[right]}</h3><div class="row"><p>${esc(q.exp)}</p><button class="btn" id="next">${last ? "Ver resultado" : "Continuar"}</button></div></div>` : ""}`;
   const pick = k => { if (reveal) return; it.pick = it.opts[k]; quizRun(v); };
-  const confirm = () => { if (!it.pick) return; it.done = true; P().answers[q.id] = { ok: it.pick.right, ts: Date.now() }; qz.combo = it.pick.right ? qz.combo + 1 : 0; save(); quizRun(v); };
+  const confirm = () => { if (!it.pick) return; it.done = true; P().answers[q.id] = { ok: it.pick.right, ts: Date.now(), pick: it.pick.t }; qz.combo = it.pick.right ? qz.combo + 1 : 0; save(); quizRun(v); };
   const next = () => { if (sim) it.done = true; if (last) return finishQuiz(v); qz.i++; quizRun(v); };
   v.onclick = e => {
     const o = e.target.closest(".opt"); if (o) return pick(+o.dataset.k);
@@ -213,7 +230,7 @@ function quizRun(v) {
 }
 document.addEventListener("keydown", e => { if (route === "questoes" && qz.mode === "run" && $("#cmd").hidden && !e.ctrlKey && !e.metaKey && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) quizRun.key?.(e); });
 function finishQuiz(v) {
-  if (qz.kind === "simulado") qz.list.forEach(x => { if (x.pick) { x.done = true; P().answers[x.q.id] = { ok: x.pick.right, ts: Date.now() }; } });
+  if (qz.kind === "simulado") qz.list.forEach(x => { if (x.pick) { x.done = true; P().answers[x.q.id] = { ok: x.pick.right, ts: Date.now(), pick: x.pick.t }; } });
   save(); qz.mode = "end"; document.body.classList.remove("in-quiz"); quizEnd(v);
 }
 function quizEnd(v) {
