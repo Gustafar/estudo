@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caderno CGU</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="top">
+  <button class="mark" data-go="home" aria-label="Início"><i></i>Caderno CGU</button>
+  <button class="search" id="open-cmd" aria-label="Buscar e ir para"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>Ir para…</span><kbd>Ctrl K</kbd></button>
+  <div class="who">
+    <div id="profiles" role="group" aria-label="Perfil"></div>
+    <button class="dots" id="menu-btn" aria-label="Mais opções" aria-expanded="false">···</button>
+    <div class="menu" id="menu" hidden>
+      <button id="rename">Renomear perfil</button><button id="export">Salvar backup</button><button id="import">Restaurar backup</button>
+    </div>
+    <input type="file" id="file" accept=".json" hidden>
+  </div>
+</header>
+<main id="view" tabindex="-1"></main>
+<nav class="dock" id="dock" aria-label="Seções"></nav>
+<div class="cmd" id="cmd" hidden>
+  <div class="cmd-box" role="dialog" aria-label="Ir para">
+    <input id="cmd-in" placeholder="Para onde quer ir? Digite uma matéria ou ação" autocomplete="off" aria-label="Buscar">
+    <div id="cmd-list" role="listbox"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script src="js/edital.js"></script>
+<script src="js/data.js"></script>
+<script src="js/extra.js"></script>
+<script src="js/cards_plus.js"></script>
+<script src="js/banca.js"></script>
+<script src="js/mc.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
