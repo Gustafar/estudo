@@ -221,7 +221,6 @@ function quizRun(v) {
     if (e.target.closest("#next")) return next();
     if (e.target.closest("#quit") && window.confirm("Encerrar agora? As respostas confirmadas ficam salvas.")) finishQuiz(v);
   };
-  document.querySelector(".sheet")?.addEventListener("click", e => { if (e.target.closest("#next")) next(); });
   quizRun.key = e => {
     const k = LETTERS.indexOf(e.key.toUpperCase());
     if (e.key.length === 1 && k >= 0 && k < it.opts.length) return pick(k);
